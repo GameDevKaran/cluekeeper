@@ -1,3 +1,7 @@
+# Current hosting decision — 18 October 2026
+
+Preferred supporting GCP project: tough-melody-508008-p8 only. Existing access verified; no deployment or new spend approved. See [hosting scope](hosting-scope.md). The tested SQLite/volume package below remains valid for local use. Do not deploy it unchanged to ephemeral Cloud Run or mount SQLite through Storage FUSE. Public hosting is optional for Amazon primary entries under the official FAQ; locally runnable source and actual video remain the immediate release path. Any cloud persistence adapter must be separately implemented/tested. The Compose package below is a single-host option, not a Cloud Run migration.
+
 # Run and deploy ClueKeeper
 
 Use Node 24. From a clean checkout run `npm ci`, `npm run build`, then `npm start`; open `http://127.0.0.1:3230`. The authored mystery and explicit controls work without model credentials. The runtime entry point is `src/server/main.ts`; TypeScript is loaded by the pinned production `tsx` dependency. Repository verification and browser commands are maintained in the README.
