@@ -1,0 +1,45 @@
+name: cluekeeper
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3230
+      CLUEKEEPER_ORIGIN: https://${CLUEKEEPER_DOMAIN:?Set the approved public hostname}
+      CLUEKEEPER_DATABASE_PATH: /data/cluekeeper.sqlite
+      CLUEKEEPER_MODEL_PROVIDER: none
+      CLUEKEEPER_MODEL_CALLS_PER_DAY: 100
+    volumes:
+      - cluekeeper_data:/data
+    expose:
+      - "3230"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 512m
+    cpus: 1.0
+  https:
+    image: caddy:2.10.2
+    restart: unless-stopped
+    environment:
+      CLUEKEEPER_DOMAIN: ${CLUEKEEPER_DOMAIN:?Set the approved public hostname}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - cluekeeper_caddy_data:/data
+      - cluekeeper_caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+volumes:
+  cluekeeper_data:
+  cluekeeper_caddy_data:
+  cluekeeper_caddy_config:

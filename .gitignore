@@ -16,6 +16,8 @@ __pycache__/
 dist/
 build/
 coverage/
+test-results/
+playwright-report/
 # Local data and scratch artifacts
 .local/
 tmp/

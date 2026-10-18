@@ -1,25 +1,23 @@
 # ClueKeeper
 
-Play a voice mystery with verified clue consistency.
+An original, nonviolent museum mystery: three rooms, four fictional adults and six evidence records. Follow the Tideglass transfer, keep a clue ledger, pause and return, then support an explanation with the records you discovered.
 
-## Status
+The playable web experience uses an actual MCP client/server and a deterministic story engine. It is labelled an Alexa+ experience simulation; no native Alexa connection is claimed. Optional Bedrock selects an available action for explicit review. It cannot author story facts or change the solution. Manual play works without credentials.
 
-This repository contains the initial product documentation. Application development has not started. There is no runnable application, measured benchmark or deployed service yet.
+## Run locally
 
-## Intended use
+Requires Node 24. Run 'npm ci', 'npm run build', then 'npm start'. Open http://127.0.0.1:3230. App-specific configuration is documented in .env.example. Model selection is off by default; no paid request is made by the normal game.
 
-An adult host wants a short spoken mystery that responds naturally to unexpected questions while remaining solvable. Unconstrained narration can introduce an impossible clue or reveal an answer prematurely. ClueKeeper combines a small authored deduction puzzle with model-driven conversation and a mechanically checked clue ledger.
+## Verify
 
-## Planned workflow
+Run 'npm test', 'npx playwright install chromium', 'npm run test:e2e', and 'node --import tsx scripts/validate-evaluation.ts'. The current local release passes 37 Node tests and 24 desktop/mobile Chromium tests. The finite puzzle proof enumerates 300 states and 1,516 transitions; every reachable state retains a route to the solution. Thirty development and thirty held-out synthetic mapping cases are structurally valid; no live model evaluation has run.
 
-One original, nonviolent museum-object mystery contains three rooms, four fictional characters and six clue facts. The player speaks an action or question; the model proposes an allowlisted game action; a deterministic engine checks prerequisites and updates discovered facts; narration uses only that result. State is `START → EXPLORE → QUESTION → CLUE_REVEALED → HYPOTHESIS_TESTED → SOLVED | CONTINUE`. An unsupported accusation prompts a request for evidence, not a changed answer.
+Build a local container with 'docker build -t cluekeeper:local-20261018 .'; 'node --import tsx scripts/verify-container.ts' checks its health, actual MCP and persistence through restart. The verification script creates and stops its own temporary localhost container. It does not contact a cloud.
 
-## Development
+## Scope and evidence
 
-Start with the behavior and boundaries in [Architecture](docs/architecture.md), then establish the fixtures and acceptance checks in [Verification plan](docs/verification-plan.md). Runtime versions, dependency installation, commands and deployment instructions will be added alongside working code. No installation command is available at this stage.
+[Architecture](docs/architecture.md) · [Puzzle proof](docs/puzzle-proof.md) · [Verification](docs/verification-plan.md) · [Deployment](docs/deployment.md) · [Model evaluation](docs/model-evaluation.md) · [Provenance](docs/provenance.md) · [Demo](docs/demo.md)
 
-Keep credentials in local ignored files or the deployment secret store. Do not commit user data, provider tokens or private evaluation records.
+Sessions belong to one browser and expire after seven days. Only the latest 500 history events are retained; discovered clues remain intact. Export or clear the case at any time. There are no accounts, multiplayer sessions or generated mysteries. Browser dictation/read-aloud are optional; physical speech quality, live Bedrock, human usability and public deployment remain unverified.
 
-## License
-
-Original application code and these documents use the [MIT license](LICENSE). Future dependencies, models, datasets and media retain their own licenses and must be reviewed before inclusion.
+The code is [MIT](LICENSE); dependencies retain their licenses. Narrow infrastructure reuse is disclosed in provenance. The puzzle, interface and evidence rules are independently authored with AI assistance.

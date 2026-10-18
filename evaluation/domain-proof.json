@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "puzzleId": "the-tideglass-transfer",
+  "method": "Exhaustive breadth-first enumeration of phase × room × discovered-clue set × capped hint tier, followed by reverse reachability from solved states.",
+  "reachableStates": 300,
+  "nonterminalStates": 288,
+  "solvedStates": 12,
+  "checkedTransitions": 1516,
+  "checkedTransitionNarrations": 1516,
+  "checkedClueReveals": 64,
+  "publicProjectionsChecked": 300,
+  "statesWithPathToSolution": 300,
+  "deadEndStates": 0,
+  "lockedClueRevealViolations": 0,
+  "unsupportedSolutionsAccepted": 0,
+  "limits": [
+    "Finite authored puzzle only; this is not a language-model or general hallucination evaluation.",
+    "Revision counters, event IDs and full history are excluded from state identity because they do not change progress affordances; every sampled transition still checks revision and immutability.",
+    "Every enumerated transition also preserves the existing history and checks the new event for undiscovered evidence references and exact locked-clue text. This is an authored-fact check, not semantic equivalence testing.",
+    "Hint tier is capped at three; repeated actions and incorrect evidence-backed hypotheses may form self-loops.",
+    "Public projection checks exact authored hidden-clue text and evidence IDs, not every possible semantic inference from visible options.",
+    "Only legal menu actions and all 36 fully evidenced hypotheses are enumerated. Invalid command shapes, missing evidence and adversarial requests are separately covered by unit cases.",
+    "Network failures, provider interpretation, audio recognition, browser rendering and persistence are outside this domain proof.",
+    "The reachability claim assumes a current revision, a safely representable revision counter and a readable session. Server history compaction must retain the latest event and the full discovered-clue ledger, and must not permanently block progress at a history threshold."
+  ],
+  "verifiedAt": "2026-10-17T12:56:38.137Z",
+  "command": "node --import tsx --test tests/domain.test.ts",
+  "domainTestsPassed": 19,
+  "authoredAdversarialCasesPassed": 10
+}

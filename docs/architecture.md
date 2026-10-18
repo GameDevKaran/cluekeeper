@@ -1,17 +1,13 @@
-# ClueKeeper: architecture
+# Architecture
 
-Proposed design; no components have been implemented.
+The browser imports domain types only. The private puzzle definition and solution stay on the server, outside the Vite bundle and source map. PublicView explicitly projects rooms, characters, discovered evidence, retained history and available actions. Hypothesis options are possibilities, not claims of newly discovered evidence.
 
-One original, nonviolent museum-object mystery contains three rooms, four fictional characters and six clue facts. The player speaks an action or question; the model proposes an allowlisted game action; a deterministic engine checks prerequisites and updates discovered facts; narration uses only that result. State is `START → EXPLORE → QUESTION → CLUE_REVEALED → HYPOTHESIS_TESTED → SOLVED | CONTINUE`. An unsupported accusation prompts a request for evidence, not a changed answer.
+The browser initializes the actual MCP SDK Streamable HTTP transport, discovers get_game and perform_action, and sends each action with its session UUID, expected revision and unique request ID. The server derives ownership from an opaque HttpOnly SameSite=Strict cookie. It never accepts a client-supplied game state. Production requires an exact HTTPS origin, Secure cookie and matching Host/Origin. Request/body limits and CSP are applied.
 
-Use a clearly labelled **Alexa+ simulation**, actual tool calls and an authorized Amazon Bedrock text model. The model interprets paraphrases and creates concise character dialogue; it cannot create canonical clues, bypass reveal conditions or award a solution. A consistency validator checks referenced fact IDs before speech output. When validation fails, a factual fallback explains the available action without inventing a live model success.
+SQLite transactions check session identity before deduplication. Identical original-revision retries return current state; conflicting keys and stale uncached revisions fail. Every accepted command passes the strict schema and deterministic reducer. Reveal prerequisites, room access, distinct evidence and the fixed solution predicate are checked together. The latest 500 journal events and 1,000 retry keys are retained. Compaction preserves the full clue ledger and newest narration. Absolute seven-day expiry is pruned on database access.
 
-Stack: TypeScript game engine/UI, JSON puzzle graph, bounded model adapter, speech input/output and isolated session storage. MVP includes one 8–12 minute mystery, save/resume, hint tiers, clue recap and evidence-backed solution checking. Exclude multiplayer networking, generated mysteries, unrestricted roleplay, copyrighted characters, child profiles and real crime investigation. All plot, clue text and audio assets are owned or appropriately licensed.
+Bedrock Converse is an optional read-only action selector. Its input contains only public context and available action labels. Output must contain an available action ID and exactly that authored label. Free prose, extra fields, unavailable actions and mixed responses are rejected. The player reviews a proposal before actual MCP execution; changed text or changed session invalidates the proposal. This conservative boundary replaces the earlier proposed freeform generated dialogue: fact-ID citations alone cannot establish that arbitrary prose is true. Authored dialogue supplies the playable story.
 
-## Failure handling and data boundaries
+Model requests are limited per browser/minute and per process/day, with bounded tokens, timeout and two SDK attempts. These limits are not persistent financial controls. They do not authorize spending. Live model requests and semantic mapping accuracy are not yet verified.
 
-Preserve original inputs and make unavailable evidence explicit. Provider failures must return a visible unresolved state. Decisions that change user or provider state need the confirmation specified above. Record source versions and operation identifiers without exposing credentials.
-
-## Implementation record
-
-Add pinned dependencies, actual component boundaries and operational instructions when the first working slice exists. Document departures from this design with their reason; do not describe planned integrations as verified.
+SQLite is appropriate for the tested single-host container with its dedicated data volume. It must not be placed on an ephemeral Cloud Run filesystem or Cloud Storage FUSE mount and described as durable. GCP hosting assessment will follow the saved application milestone, scoped only to the user-approved project tough-melody-508008-p8. No storage migration or public deployment has occurred.
