@@ -4,12 +4,13 @@ import { dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { applyCommand, createSession, CommandSchema, DomainError, type Command, type Session } from '../domain/index.js';
 import { RETENTION_MS } from './security.js';
+import { MAX_HISTORY, MAX_RETRIES, type StoryStore } from './persistence.js';
+export { MAX_HISTORY } from './persistence.js';
 
 // SQLite transaction and request-deduplication seam adapted from RoomReady
 // (MIT). The session identity guard precedes retry lookup. Original-revision
 // retries return the current state; uncached actions must use its revision.
-export const MAX_HISTORY = 500;
-export class Store {
+export class Store implements StoryStore {
   private db: DatabaseSync;
   constructor(path: string) {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
@@ -58,14 +59,16 @@ export class Store {
       next.history = next.history.slice(-MAX_HISTORY);
       this.db.prepare('UPDATE sessions SET body=? WHERE owner=?').run(JSON.stringify(next), owner);
       this.db.prepare('INSERT INTO operations VALUES(?,?,?)').run(owner, requestId, hash);
-      this.db.prepare('DELETE FROM operations WHERE owner=? AND rowid NOT IN (SELECT rowid FROM operations WHERE owner=? ORDER BY rowid DESC LIMIT 1000)').run(owner, owner);
+      this.db.prepare('DELETE FROM operations WHERE owner=? AND rowid NOT IN (SELECT rowid FROM operations WHERE owner=? ORDER BY rowid DESC LIMIT ?)').run(owner, owner, MAX_RETRIES);
       this.db.exec('COMMIT');
       return next;
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
   }
-  clear(owner: string) {
+  clear(owner: string, expectedSessionId?: string) {
     this.db.exec('BEGIN IMMEDIATE');
     try {
+      const current = this.get(owner);
+      if (current && expectedSessionId && current.id !== expectedSessionId) throw new DomainError('STALE_SESSION', 'This mystery session was replaced. Refresh before clearing it.');
       this.db.prepare('DELETE FROM operations WHERE owner=?').run(owner);
       this.db.prepare('DELETE FROM sessions WHERE owner=?').run(owner);
       this.db.exec('COMMIT');

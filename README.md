@@ -10,13 +10,15 @@ Requires Node 24. Run 'npm ci', 'npm run build', then 'npm start'. Open http://1
 
 ## Verify
 
-Run 'npm test', 'npx playwright install chromium', 'npm run test:e2e', and 'node --import tsx scripts/validate-evaluation.ts'. The current local release passes 37 Node tests and 24 desktop/mobile Chromium tests. The finite puzzle proof enumerates 300 states and 1,516 transitions; every reachable state retains a route to the solution. Thirty development and thirty held-out synthetic mapping cases are structurally valid; no live model evaluation has run.
+Run 'npm test', 'npx playwright install chromium', 'npm run test:e2e', and 'node --import tsx scripts/validate-evaluation.ts'. The current local release passes 53 Node tests and 24 desktop/mobile Chromium tests. This includes generation-guarded persistence races, absolute expiry, retry/history compaction, storage failure and actual Google SDK requests against a labelled local HTTP double. The finite puzzle proof enumerates 300 states and 1,516 transitions; every reachable state retains a route to the solution. Thirty development and thirty held-out synthetic mapping cases are structurally valid; no live model evaluation has run.
 
 Build a local container with 'docker build -t cluekeeper:local-20261018 .'; 'node --import tsx scripts/verify-container.ts' checks its health, actual MCP and persistence through restart. The verification script creates and stops its own temporary localhost container. It does not contact a cloud.
 
 ## Scope and evidence
 
 [Architecture](docs/architecture.md) · [Puzzle proof](docs/puzzle-proof.md) · [Verification](docs/verification-plan.md) · [Deployment](docs/deployment.md) · [Model evaluation](docs/model-evaluation.md) · [Provenance](docs/provenance.md) · [Demo](docs/demo.md)
+
+[Cloud Run configuration](docs/cloud-run.md) uses the existing authorized project, a private app-specific bucket and an attached runtime identity. Local SQLite remains available; Cloud Run refuses ephemeral SQLite. Public HTTPS deployment and live verification must be recorded separately from local test results.
 
 Sessions belong to one browser and expire after seven days. Only the latest 500 history events are retained; discovered clues remain intact. Export or clear the case at any time. There are no accounts, multiplayer sessions or generated mysteries. Browser dictation/read-aloud are optional; physical speech quality, live Bedrock, human usability and public deployment remain unverified.
 

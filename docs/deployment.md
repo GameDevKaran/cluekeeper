@@ -1,6 +1,6 @@
-# Current hosting decision — 18 October 2026
+# Current hosting decision — 19 October 2026
 
-Preferred supporting GCP project: tough-melody-508008-p8 only. Existing access verified; no deployment or new spend approved. See [hosting scope](hosting-scope.md). The tested SQLite/volume package below remains valid for local use. Do not deploy it unchanged to ephemeral Cloud Run or mount SQLite through Storage FUSE. Public hosting is optional for Amazon primary entries under the official FAQ; locally runnable source and actual video remain the immediate release path. Any cloud persistence adapter must be separately implemented/tested. The Compose package below is a single-host option, not a Cloud Run migration.
+Preferred supporting GCP project: tough-melody-508008-p8 only. Public deployment and verification are required for the portfolio release milestone. The durable GCS adapter and Cloud Run startup guards are implemented; [Cloud Run configuration](cloud-run.md) defines the isolated resources, absolute expiry, permissions and live acceptance gate. A local test or configured bucket name does not establish a deployment. The SQLite/volume package below remains valid for local use; do not put SQLite on ephemeral Cloud Run or Storage FUSE. The Compose package is a single-host alternative.
 
 # Run and deploy ClueKeeper
 
@@ -26,9 +26,9 @@ Bedrock interprets text only into an action already present in the current `publ
 
 ## Release, persistence and rollback
 
-Verify an independent HTTPS URL, production cookie flags, Host/Origin rejection, a new mystery, pause/resume, export/clear, fresh-browser isolation and SQLite persistence across an app restart. Check the browser bundle and responses for unrevealed puzzle facts. Confirm model-off behavior and actual optional-model failures separately. A successful local test is not live Bedrock or deployment evidence.
+Verify an independent HTTPS URL, production cookie flags, Host/Origin rejection, a new mystery, pause/resume, export/clear, fresh-browser isolation and the selected store's persistence across an app restart or Cloud Run revision replacement. Check the browser bundle and responses for unrevealed puzzle facts. Confirm model-off behavior and actual optional-model failures separately. A successful local test is not live Bedrock or deployment evidence.
 
-Sessions have an absolute seven-day lifetime; expired records are pruned on later database access. Cookie lifetime alone is not the database retention mechanism. Clearing a session removes its state and request records; backups remain subject to the operator's explicit retention policy. Do not promise deletion from backups that have not been removed. Keep one app replica with its local SQLite volume unless a separately verified storage design replaces it.
+Sessions have an absolute seven-day lifetime; expired records are pruned on later store access. GCS additionally uses an immutable customTime with lifecycle cleanup, as described in the Cloud Run configuration. Cookie lifetime alone is not the retention mechanism. Clearing a session atomically checks its identity and removes its state and request records; backups remain subject to the operator's explicit retention policy. Do not promise deletion from backups that have not been removed. Local SQLite needs one app replica with its own persistent volume.
 
 Back up SQLite consistently, including its WAL state through SQLite-aware backup or a stopped app; copying only the main database file while it is writing can lose data. Restore using the compatible source/image revision and preserved data volume. Do not remove volumes as routine restart or rollback. Record source commit/image, approved host, public origin, persistence verification and remaining live gates in the release evidence.
 
