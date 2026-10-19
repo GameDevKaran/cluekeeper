@@ -114,11 +114,13 @@ function Read-Service {
     return ConvertFrom-Json -InputObject (Invoke-Gcloud @('run','services','describe',$Service,"--region=$Region",'--format=json')) -AsHashtable
 }
 function Wait-ServiceReady {
+    param([string]$PreviousRevision = '', [string]$ExpectedOrigin = '')
     $deadline = [DateTime]::UtcNow.AddMinutes(3)
     do {
         $serviceState = Read-Service
         $condition = @($serviceState.status.conditions | Where-Object { $_.type -eq 'Ready' })[0]
-        if ($condition.status -eq 'True' -and $serviceState.status.latestCreatedRevisionName -eq $serviceState.status.latestReadyRevisionName) { return $serviceState }
+        $originMatches = -not $ExpectedOrigin -or @($serviceState.spec.template.spec.containers[0].env | Where-Object { $_.name -eq 'CLUEKEEPER_ORIGIN' -and $_.value -eq $ExpectedOrigin }).Count -eq 1
+        if ($condition.status -eq 'True' -and $serviceState.status.latestCreatedRevisionName -eq $serviceState.status.latestReadyRevisionName -and $serviceState.status.latestReadyRevisionName -ne $PreviousRevision -and $originMatches) { return $serviceState }
         if ($condition.status -eq 'False') { throw "ClueKeeper startup failed: $($condition.message)" }
         Start-Sleep -Seconds 2
     } while ([DateTime]::UtcNow -lt $deadline)
@@ -302,7 +304,7 @@ try {
         $url = [string]$deployed.status.url
         if ($url -notmatch '^https://[a-z0-9.-]+\.run\.app$') { throw 'Unexpected service URL. Review before setting an origin.' }
         [void](Invoke-Gcloud @('run','services','update',$Service,'--async',"--region=$Region","--update-env-vars=CLUEKEEPER_ORIGIN=$url"))
-        $ready = Wait-ServiceReady
+        $ready = Wait-ServiceReady -PreviousRevision $deployed.status.latestReadyRevisionName -ExpectedOrigin $url
         Assert-OwnedService $ready
         if (-not @($ready.status.conditions | Where-Object { $_.type -eq 'Ready' -and $_.status -eq 'True' }).Count) { throw 'Cloud Run revision is not ready.' }
         $Journal.url = $url
